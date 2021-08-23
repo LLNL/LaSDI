@@ -35,16 +35,11 @@ If the generated data already fits within this regime, then do not modify the sn
 
 ### Applying DIALS:
 
-First Pass: Try to fit either degree = 1 or degree = 2 (with "include_interactions = FALSE then = True")
--Visually verify the fit and through MSE in latent-space. 
+First Pass: Try to fit either degree = 1 or degree = 2 (with "include_interactions = FALSE then = True"). Visually verify the fit and through MSE in latent-space. 
 
-Second Pass: If above does not work, normalize the latent-space data by dividing by the max(abs()) over all snapshots in latent-space. (It's important that if you modify one snapshot, then you modify all snapshots in the same way). 
-	
--This method requires you to multiply by the normalization factor after applying the ODE integrator. 
+Second Pass: If above does not work, normalize the latent-space data by dividing by the max(abs()) over all snapshots in latent-space. (It's important that if you modify one snapshot, then you modify all snapshots in the same way). This method requires you to multiply by the normalization factor after applying the ODE integrator. 
 
-Third Pass: You can increase the degree with and without interactions as necessary. However, this makes the integration much more unstable in some situations. 
-
--Proceed with Caution
+Third Pass: You can increase the degree with and without interactions as necessary. However, this makes the integration much more unstable in some situations. Proceed with Caution
 
 Fourth Pass: If the above does not work, then contact me for further and more complex techniques (such as appending the latent-space). 
 
