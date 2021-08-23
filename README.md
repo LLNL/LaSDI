@@ -1,4 +1,6 @@
 # DIALS
+## Disclaimer:
+For 1D and 2D Burgers, file organization is still ongoing. I will be modifying these files to (a) make the file locations easily modifiable and consistent (b) make my previous simulations accessible when working on LASSEN (c) make one file that builds, trains, and applies DIALS in one go.
 ## Orgainization
 
 There are three examples included. 1) 1D Burgers, 2) 2D Burgers (both as simulated in [https://arxiv.org/abs/2009.11990]) and 3) a radial advection example as from MFEM (example 9, problem 3)
