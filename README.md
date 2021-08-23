@@ -22,6 +22,26 @@ In the case of MFEM examples, it is necessary to transfer the simultion from fin
 Note, that for consistency, the interpolation must remain the same across all training and testing values. The autoencoder training and DIALS code is set up to use 
 512x512 (and reduced to 64x64 for computational purposes). If you use 256x256 interpolation and reduce this to 64x64, the results will be incosistent with 512x512 reduced to 64x64.
 
+
+
+## Notes on Training Autoencoders and Applying DIALS
+
+Below is to help intution on modifying the code as necessary:
+
+### Training AE:
+
+Various snapshots, need to retain differences in initial conditions. The easiest method to do this is to regularize so that max_(all snapshots & all time points & all space points) = 1. 
+If the generated data already fits within this regime, then do not modify the snapshots when training the network. 
+
+### Applying DIALS:
+
+First Pass: Try to fit either degree = 1 or degree = 2 (with "include_interactions = FALSE then = True")
+	Visually verify the fit and through MSE in latent-space. 
+Second Pass: If above does not work, normalize the latent-space data by dividing by the max(abs()) over all snapshots in latent-space. (It's important that if you modify one snapshot, then you modify all snapshots in the same way). 
+	This method requires you to multiply by the normalization factor after applying the ODE integrator. 
+Third Pass: You can increase the degree with and without interactions as necessary. However, this makes the integration much more unstable in some situations. Proceed with Caution
+Fourth Pass: If the above does not work, then contact me for further and more complex techniques (such as appending the latent-space). 
+
 ### Questions/Comments
 Questions and comments should be directed to frieswd@math.arizona.edu
 
