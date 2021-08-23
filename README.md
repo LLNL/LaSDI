@@ -9,8 +9,10 @@ They also include basic data files and trained networks for observing some of th
 
 (Check each script for file locations. If running on Lassen, you can access my files for interpolations/models. For producing your own results, make sure the file names are consistent)
 
+To generate results, run Build_<*>.ipynb (1D/2D Burgers) or import VISIT files from various MFEM examples and train models using Train_<*>.ipynb. These results might not be the most accurate because of the lack of lots of training data. If you wish to consider more data but do not want to build/train the models, contact me for the file locations.
+*Note the "..._local_compare.ipynb" files use more testing points. Contact me if you have trouble getting to the file locations.
 
-For simple results: run DIALS_<*>.ipynb as is. This will use the data and autoencoders included in the repo and preform basic prediciton of points within the parameter space.
+
 
 If you wish to compile your own results, modify the Build_<*>.ipynb (1D/2D Burgers) or import VISIT files from various MFEM examples. 
 
