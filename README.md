@@ -24,7 +24,7 @@ Note, that for consistency, the interpolation must remain the same across all tr
 
 
 
-## Notes on Training Autoencoders and Applying DIALS
+## Notes on Training Autoencoders and Applying LaSDI
 
 Below is to help intution on modifying the code as necessary:
 
