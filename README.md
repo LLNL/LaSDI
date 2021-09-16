@@ -1,10 +1,10 @@
-# DIALS
+# LaSDI
 ## Disclaimer:
-For 1D and 2D Burgers, file organization is still ongoing. I will be modifying these files to (a) make the file locations easily modifiable and consistent (b) make my previous simulations accessible when working on LASSEN (c) make one file that builds, trains, and applies DIALS in one go.
+For 1D and 2D Burgers, file organization is still ongoing. I will be modifying these files to (a) make the file locations easily modifiable and consistent (b) make my previous simulations accessible when working on LASSEN (c) make one file that builds, trains, and applies LaSDI in one go.
 ## Orgainization
 
 There are three examples included. 1) 1D Burgers, 2) 2D Burgers (both as simulated in [https://arxiv.org/abs/2009.11990]) and 3) a radial advection example as from MFEM (example 9, problem 3)
-Each of the folders includes instructions for building the data, training the neural networks and applying DIALS.
+Each of the folders includes instructions for building the data, training the neural networks and applying LaSDI.
 They also include basic data files and trained networks for observing some of the results. 
 
 ## Instructions
@@ -33,7 +33,7 @@ Below is to help intution on modifying the code as necessary:
 Various snapshots, need to retain differences in initial conditions. The easiest method to do this is to regularize so that max_(all snapshots & all time points & all space points) = 1. 
 If the generated data already fits within this regime, then do not modify the snapshots when training the network. 
 
-### Applying DIALS:
+### Applying LaSDI:
 
 First Pass: Try to fit either degree = 1 or degree = 2 (with "include_interactions = FALSE then = True"). Visually verify the fit and through MSE in latent-space. 
 
