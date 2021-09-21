@@ -35,17 +35,19 @@ If the generated data already fits within this regime, then do not modify the sn
 The LaSDI class is documented with inputs, outputs and general instructions. Various *kwargs* can be passed through to adjust the learning process. In general:
 
 1. LaSDI(
-    Inputs:
-       encoder: either neural network (with pytorch) or matrix (LS-ROM)
-       decoder: either neural network (with pytorch) or matrix (LS-ROM)
-       NN: Boolean on whether a nerual network is used
-       device: device NN is on. Default 'cpu', use 'cuda' if necessary
-       Local: Boolean. Determines Local or Global DI *(still in progress)*
-       *Coef_interp: Boolean. Determines method of Local DI*
-       nearest_neigh: Number of nearest neigh in Local DI
-       )
+
+        Inputs:
+           encoder: either neural network (with pytorch) or matrix (LS-ROM)
+           decoder: either neural network (with pytorch) or matrix (LS-ROM)
+           NN: Boolean on whether a nerual network is used
+           device: device NN is on. Default 'cpu', use 'cuda' if necessary
+           Local: Boolean. Determines Local or Global DI (still in progress)
+           Coef_interp: Boolean. Determines method of Local DI
+           nearest_neigh: Number of nearest neigh in Local DI
+           )
        
 2. LaSDI.train_dynamics(
+
         Inputs:
            ls_trajs: latent-space trajectories in a list of arrays formatted as [time, space] *Currently working on implementation to generate ls_trajectories within the method*
            training_values: list/array of corresponding parameter values to above
@@ -59,6 +61,8 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
            )
  
 3. LaSDI.generate_FOM(
+
+
         Inputs:
             pred_IC: Initial condition of the desired simulation
             pred_value: Associated parameter values
