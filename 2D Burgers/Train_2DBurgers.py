@@ -65,8 +65,8 @@ activation = 'sigmoid'
 
 
 # set batch_size, number of epochs, paitience for early stop
-batch_size = 100
-num_epochs = 10000//5
+batch_size = 1000
+num_epochs = 30000//5
 num_epochs_print = num_epochs//100
 early_stop_patience = num_epochs//50
 
@@ -641,12 +641,29 @@ for LS_dim in [3]:
     print("Saving after {}th training to".format(epoch),file_name_AE_u)
     encoder_u = encoder
     decoder_u = decoder
-    torch.save({'encoder_state_dict': encoder.state_dict(), 'decoder_state_dict': decoder.state_dict()}, '../../../../../usr/WS1/fries4/Experiments/2DBurgers/model/AE_u.tar')
-    #torch.save((encoder,decoder),file_name_AE_u)
+    
+    
+    
+    
+    
+    
+    
+    #############################
+    ####### SAVE FOR U ##########
+    torch.save({'encoder_state_dict': encoder.state_dict(), 'decoder_state_dict': decoder.state_dict()}, '../../../../../usr/WS1/fries4/Experiments/2DBurgers/model/AE_u_git.tar')
+    #############################
+    #############################
 
-
-    # In[33]:
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     # delete checkpoint
     try:
@@ -864,10 +881,24 @@ for LS_dim in [3]:
     print("Saving after {}th training to".format(epoch),file_name_AE_v)
     encoder_v = encoder
     decoder_v = decoder
-    #torch.save((encoder,decoder),file_name_AE_v)
-    torch.save({'encoder_state_dict': encoder.state_dict(), 'decoder_state_dict': decoder.state_dict()}, '../../../../../usr/WS1/fries4/Experiments/2DBurgers/model/AE_v.tar')
+    
 
-    # In[38]:
+    
+    #############################
+    ####### SAVE FOR V ##########
+    
+    torch.save({'encoder_state_dict': encoder.state_dict(), 'decoder_state_dict': decoder.state_dict()}, '../../../../../usr/WS1/fries4/Experiments/2DBurgers/model/AE_v_git.tar')
+
+    #############################
+    #############################
+
+    
+    
+    
+    
+    
+    
+    
 
 
     # delete checkpoint

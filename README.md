@@ -1,10 +1,8 @@
 # LaSDI
-## Disclaimer:
-For 2D Burgers, file organization is still ongoing. I will be modifying these files to (a) make the file locations easily modifiable and consistent (b) make my previous simulations accessible when working on LASSEN (c) make one file that builds, trains, and applies LaSDI in one go.
 ## Orgainization
 
-There are three examples included. 1) 1D Burgers, 2) 2D Burgers (both as simulated in [https://arxiv.org/abs/2009.11990]) and 3) a radial advection example as from MFEM (example 9, problem 3)
-Each of the folders includes instructions for building the data, training the neural networks and applying LaSDI.
+There are four examples included. 1) 1D Burgers, 2) 2D Burgers (both as simulated in [https://arxiv.org/abs/2009.11990]), 3) a radial advection example as from MFEM (example 9, problem 3) and 4) a time-dependent diffusion example (MFEM example 16)
+Each of the folders includes instructions for building the data, training the neural networks or using a linear data-compression technique and applying LaSDI.
 They also include basic data files and trained networks for observing some of the results. 
 
 ## Instructions
@@ -16,7 +14,7 @@ To generate results, run Build_<*>.ipynb (1D/2D Burgers) or import VISIT files f
 If you wish to compile your own results, modify the Build_<*>.ipynb (1D/2D Burgers) or import VISIT files from various MFEM examples. 
 
 In the case of MFEM examples, it is necessary to transfer the simultion from finite elements to finite difference. This is completed by the Interp_MFEM.ipynb file.
-Note, that for consistency, the interpolation must remain the same across all training and testing values. The autoencoder training and DIALS code is set up to use 
+Note, that for consistency, the interpolation must remain the same across all training and testing values. The autoencoder training and LaSDI code is set up to use 
 512x512 (and reduced to 64x64 for computational purposes). If you use 256x256 interpolation and reduce this to 64x64, the results will be incosistent with 512x512 reduced to 64x64.
 
 

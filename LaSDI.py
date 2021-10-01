@@ -36,7 +36,7 @@ class LaSDI:
             
         return
     
-    def train_dynamics(self,ls_trajs, training_values, dt, normal = 1, degree = 1, include_interaction=False, LS_vis = True ):
+    def train_dynamics(self, ls_trajs, training_values, dt, normal = 1, degree = 1, include_interaction=False, LS_vis = True, threshold = 0 ):
         """
         Approximates the dynamical system for the latent-space. Local == True, use generate_FOM. 
         
@@ -51,7 +51,7 @@ class LaSDI:
               degree: degree of desired polynomial. Default 1
               include_interactions: Boolean include cross terms for degree >1. Default False
         """
-        if normal == "max":
+        if normal == 'max':
             self.normal = np.amax(np.abs(ls_trajs))
         else:
             self.normal = normal
@@ -61,7 +61,7 @@ class LaSDI:
             data_LS.append(traj/normal)
             
         poly_library = ps.PolynomialLibrary(include_interaction=include_interaction, degree = degree)
-        optimizer = ps.STLSQ(alpha=0, copy_X=True, fit_intercept=False, max_iter=20, normalize=False, ridge_kw=None, threshold=0)
+        optimizer = ps.STLSQ(alpha=0, copy_X=True, fit_intercept=False, max_iter=20, normalize=False, ridge_kw=None, threshold=threshold)
         if self.Local == False:
             model = ps.SINDy(feature_library = poly_library, optimizer = optimizer)
             model.fit(data_LS, t = dt, multiple_trajectories = True)
@@ -71,17 +71,21 @@ class LaSDI:
                 ax = plt.axes()
                 labels = {'orig': 'Latent-Space Trajectory', 'new': 'Approximated Dynamics'}
                 for dim in range(data_LS[-1].shape[1]):
-                    plt.plot(data_LS[-1][:-1,dim], alpha = .5, label = labels['orig'])
+                    plt.plot( data_LS[-1][:-1,dim], alpha = .5, label = labels['orig'])
                     labels['orig'] = '_nolegend_'
                 plt.gca().set_prop_cycle(None)
-                new = model.simulate(data_LS[-1][0], np.linspace(0, 1, len(data_LS[-1])))
+                new = model.simulate(data_LS[-1][0], np.linspace(0, dt*len(data_LS[-1]), len(data_LS[-1])))
                 for dim in range(data_LS[-1].shape[1]):
                     plt.plot(new[:,dim], '--', label = labels['new'])
                     labels['new'] = '_nolegend_'
                 ax.legend()
-                plt.show()
             return model.print()  
-
+        elif self.Coef_interp == True:
+            self.model_list = []
+            for i, param in enumerate(training_values):
+                model = ps.SINDy(feature_library = poly_library, optimizer = optimizer)
+                self.model_list.append(model.fit(data_LS[i], t = dt))
+                return
         else:
             self.ls_trajs = ls_trajs
             self.training_values = training_values
@@ -91,8 +95,8 @@ class LaSDI:
             self.data_LS = data_LS
             self.poly_library = poly_library
             self.optimizer = optimizer
-            
-#             return print('Warning: This module is not completed yet. Use LaSDI.generate_FOM')
+            self.threshold = threshold
+#             print('Warning: This module is not completed yet. Continue to LaSDI.generate_FOM')
             return
         """
         Work in Progress (Partitioning parameter space and training one model for each)
@@ -116,31 +120,33 @@ class LaSDI:
         """
         IC = self.IC_gen(pred_IC)
         if self.Local == False:
-            latent_space_recon = self.normal*self.model.simulate(IC, t)
+            latent_space_recon = self.normal*self.model.simulate(IC/self.normal, t)
             FOM_recon = self.decoder(latent_space_recon)
             if self.NN == False:
                 return FOM_recon.T
             else:
                 return FOM_recon
-        
         else:
-            if self.Coef_interp == False:
-                dist = np.empty(len(self.training_values))
-                for iii,P in enumerate(self.training_values):
-                    dist[iii]=(LA.norm(P-pred_value))
+            dist = np.empty(len(self.training_values))
+            for iii,P in enumerate(self.training_values):
+                dist[iii]=(LA.norm(P-pred_value))
 
-                k = self.nearest_neigh
-                dist_index = np.argsort(dist)[0:k]
+            k = self.nearest_neigh
+            dist_index = np.argsort(dist)[0:k]
+            if self.Coef_interp == False:
                 local = []
-                j=-1
                 for iii in dist_index:
                     local.append(self.data_LS[iii])
                 model = ps.SINDy(feature_library = self.poly_library, optimizer = self.optimizer)    
                 model.fit(local, t = self.dt, multiple_trajectories = True, quiet = True)
-                
-                latent_space_recon = self.normal*model.simulate(IC, t)
+                latent_space_recon = self.normal*model.simulate(IC/self.normal, t)
                 FOM_recon = self.decoder(latent_space_recon)
-                
-                return FOM_recon.T
+                if self.NN == False:
+                    return FOM_recon.T
+                else:
+                    return FOM_recon
+            else:
+                return
+            
         
         
