@@ -15,6 +15,7 @@ cp makefile_ex9 $MFEM_DIR
 cp interp_to_numpy.py $MFEM_DIR
 
 cd $MFEM_DIR
+rm ex9_interp_*.npz
 rm -rf ex9_sim
 mkdir ex9_sim
 make lasdi_ex9 -f makefile_ex9
@@ -33,4 +34,4 @@ make clean
 cd ../../../Radial\ Advection/
 rm -rf data
 mkdir data
-mv -f $MFEM_DIR/ex9_sim ./data/
+mv -f $MFEM_DIR/ex9_interp_*.npz ./data/
