@@ -7,17 +7,11 @@ They also include basic data files and trained networks for observing some of th
 
 ## Instructions
 
-(Check each script for file locations. If running on Lassen, you can access my files for interpolations/models. For producing your own results, make sure the file names are consistent)
-
 To generate results, run Build_<*>.ipynb (1D/2D Burgers) or import VISIT files from various MFEM examples and train models using Train_<*>.ipynb. These results might not be the most accurate because of the lack of lots of training data. If you wish to consider more data but do not want to build/train the models, contact me for the file locations
 
 If you wish to compile your own results, modify the Build_<*>.ipynb (1D/2D Burgers) or import VISIT files from various MFEM examples. 
 
-In the case of MFEM examples, it is necessary to transfer the simultion from finite elements to finite difference. This is completed by the Interp_MFEM.ipynb file.
-Note, that for consistency, the interpolation must remain the same across all training and testing values. The autoencoder training and LaSDI code is set up to use 
-512x512 (and reduced to 64x64 for computational purposes). If you use 256x256 interpolation and reduce this to 64x64, the results will be incosistent with 512x512 reduced to 64x64.
-
-
+In the case of MFEM examples, it is necessary to transfer the simultion from finite element data to a uniform grid. This is completed by the interp_to_numpy.py file. The default grid is 64x64.
 
 ## Notes on Training Autoencoders and Applying LaSDI
 
@@ -42,7 +36,7 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
            Local: Boolean. Determines Local or Global DI (still in progress)
            Coef_interp: Boolean. Determines method of Local DI
            nearest_neigh: Number of nearest neigh in Local DI
-           )
+           
        
 2. LaSDI.train_dynamics(
 
@@ -56,7 +50,7 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
            PySINDy parameters:
               degree: degree of desired polynomial. Default 1
               include_interactions: Boolean include cross terms for degree >1. Default False
-           )
+           
  
 3. LaSDI.generate_FOM(
 
@@ -65,7 +59,7 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
             pred_IC: Initial condition of the desired simulation
             pred_value: Associated parameter values
             t: time stamps corresponding to training FOMs
-            )
+            
 
 First Pass: Try to fit either degree = 1 or degree = 2 (with "include_interactions = FALSE then = True"). Visually verify the fit and through MSE in latent-space. 
 
