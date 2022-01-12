@@ -13,11 +13,16 @@ from mpl_toolkits import mplot3d
 import path
 from mfem import path
 from os.path import expanduser, join, dirname, exists
+import sys
+
+print('Number of arguments:', len(sys.argv), 'arguments.')
+print('Argument List:', str(sys.argv))
 
 
 
 path = dirname(dirname(__file__))
-meshfile = expanduser(join(path, 'examples','ex9_sim','Example9_000000','mesh.000000'))   
+#meshfile = expanduser(join(path, 'examples','ex9_sim','Example9_000000','mesh.000000'))   
+meshfile = expanduser(join(path, 'ex9_sim','Example9_000000','mesh.000000'))   
 mesh = mfem.Mesh(meshfile)
 
 x = np.linspace(-1,1,512)
@@ -56,4 +61,5 @@ import pickle
 final = final.reshape(-1,512,512)[:,::8,::8]
 final = final.reshape(-1,64**2).astype('float32')        
 
-np.savez_compressed('ex9_interp_61', final)
+#np.savez_compressed('ex9_interp_61', final)
+np.savez_compressed('ex9_interp_{}'.format(sys.argv[1]), final)
