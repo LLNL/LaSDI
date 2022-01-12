@@ -2,6 +2,21 @@ import numpy as np
 import numpy.linalg as LA
 import pysindy as ps
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp2d, Rbf
+import scipy.integrate as integrate
+from itertools import combinations_with_replacement
+import time
+
+# import matplotlib
+# matplotlib.rcParams['mathtext.fontset'] = 'stix'
+# matplotlib.rcParams['font.family'] = 'STIXGeneral'
+# matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
+# plt.rcParams['font.size'] = 56
+# plt.rcParams['figure.dpi'] = 150
+# plt.rcParams['axes.linewidth'] = 2
+# plt.rcParams['axes.spines.right'] = False
+# plt.rcParams['axes.spines.top'] = False
+
 
 class LaSDI:
     """
@@ -25,6 +40,10 @@ class LaSDI:
         self.Coef_interp = Coef_interp
         self.nearest_neigh = nearest_neigh
         self.NN = NN
+        if Coef_interp == True:
+            if nearest_neigh <4:
+                print('WARNING: More minimum 4 nearest neighbors required for interpolation')
+                return
         if NN == False:
             self.IC_gen = lambda params: np.matmul(encoder, params)
             self.decoder = lambda traj: np.matmul(decoder, traj.T)
@@ -67,25 +86,42 @@ class LaSDI:
             model.fit(data_LS, t = dt, multiple_trajectories = True)
             self.model = model
             if LS_vis == True:
+                if self.NN == True:
+                    DcTech = 'LaSDI-NM Latent-Space Visualization'
+#                     DcTech = 'Training Latent-Space Trajectory'
+                else:
+                    DcTech = 'LaSDI-LS Latent-Space Visualization'
+                time = np.linspace(0, dt*len(data_LS[-1]), len(data_LS[-1]))
                 fig = plt.figure()
+                fig.set_size_inches(9,6)
                 ax = plt.axes()
+                ax.set_title(DcTech)
                 labels = {'orig': 'Latent-Space Trajectory', 'new': 'Approximated Dynamics'}
                 for dim in range(data_LS[-1].shape[1]):
-                    plt.plot( data_LS[-1][:-1,dim], alpha = .5, label = labels['orig'])
+                    plt.plot(time[:-1], data_LS[-1][:-1,dim], alpha = .5, label = labels['orig'])
                     labels['orig'] = '_nolegend_'
                 plt.gca().set_prop_cycle(None)
                 new = model.simulate(data_LS[-1][0], np.linspace(0, dt*len(data_LS[-1]), len(data_LS[-1])))
                 for dim in range(data_LS[-1].shape[1]):
-                    plt.plot(new[:,dim], '--', label = labels['new'])
+                    plt.plot(time, new[:,dim], '--', label = labels['new'])
                     labels['new'] = '_nolegend_'
-                ax.legend()
+#                 ax.legend()
+#                 ax.set_ylim(-1.5,1.5)
+                ax.set_xlabel('Time')
+                ax.set_ylabel('Magnitude')
             return model.print()  
         elif self.Coef_interp == True:
             self.model_list = []
-            for i, param in enumerate(training_values):
+            self.training_values = training_values
+            self.dt = dt
+            self.degree = degree
+            self.length = len(data_LS[0])
+            poly_library = ps.PolynomialLibrary(include_interaction=True, degree = degree)
+            for i, _ in enumerate(training_values):
                 model = ps.SINDy(feature_library = poly_library, optimizer = optimizer)
-                self.model_list.append(model.fit(data_LS[i], t = dt))
-                return
+                model.fit(data_LS[i], t = dt)
+                self.model_list.append(model.coefficients())
+            return
         else:
             self.ls_trajs = ls_trajs
             self.training_values = training_values
@@ -127,18 +163,21 @@ class LaSDI:
             else:
                 return FOM_recon
         else:
+            training_time_start = time.time()
             dist = np.empty(len(self.training_values))
             for iii,P in enumerate(self.training_values):
                 dist[iii]=(LA.norm(P-pred_value))
 
             k = self.nearest_neigh
             dist_index = np.argsort(dist)[0:k]
+            self.dist_index = dist_index
             if self.Coef_interp == False:
                 local = []
                 for iii in dist_index:
                     local.append(self.data_LS[iii])
                 model = ps.SINDy(feature_library = self.poly_library, optimizer = self.optimizer)    
                 model.fit(local, t = self.dt, multiple_trajectories = True, quiet = True)
+                self.training_time = time.time()-training_time_start
                 latent_space_recon = self.normal*model.simulate(IC/self.normal, t)
                 FOM_recon = self.decoder(latent_space_recon)
                 if self.NN == False:
@@ -146,6 +185,33 @@ class LaSDI:
                 else:
                     return FOM_recon
             else:
+                self.coeff_interp_model = np.empty(self.model_list[0].shape)
+                self.training_time = 0
+                for ls_dim in range(self.model_list[0].shape[0]):
+                    for func_index in range(self.model_list[0].shape[1]):
+                        f = Rbf(self.training_values[dist_index,0], self.training_values[dist_index,1], np.array(self.model_list)[dist_index,ls_dim,func_index])
+                        self.coeff_interp_model[ls_dim, func_index] = f(pred_value[0], pred_value[1])
+                def ODE_resim(X,t, Xi):
+                    Lib = []
+                    dXdt = []
+                    for deg in range(1,self.degree + 1):
+                        comb = combinations_with_replacement(X,deg)
+                        for guess in comb:
+                                Lib.append(np.prod(guess))
+                    Lib = np.array(Lib)
+                    for dim in range(len(X)):
+                        x_dot = 0
+                        x_dot += Xi[0, dim]
+                        x_dot += np.dot(Xi[1:,dim], Lib)
+                        dXdt.append(x_dot)
+                    return np.array(dXdt)
+                self.time = np.arange(0,self.dt*self.length, self.dt)
+                self.latent_space_recon = self.normal*integrate.odeint(ODE_resim, IC/self.normal, self.time, args = (self.coeff_interp_model.T,))
+                FOM_recon = self.decoder(self.latent_space_recon)
+                if self.NN == False:
+                    return FOM_recon.T
+                else:
+                    return FOM_recon
                 return
             
         
