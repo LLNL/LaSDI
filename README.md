@@ -7,11 +7,13 @@ They also include basic data files and trained networks for observing some of th
 
 ## Instructions
 
-To generate results, run Build_<*>.ipynb (1D/2D Burgers) or import VISIT files from various MFEM examples and train models using Train_<*>.ipynb. These results might not be the most accurate because of the lack of lots of training data. If you wish to consider more data but do not want to build/train the models, contact me for the file locations
+### 1D and 2D Burger's Problem
 
-If you wish to compile your own results, modify the Build_<*>.ipynb (1D/2D Burgers) or import VISIT files from various MFEM examples. 
+To generate results, first generate the training data using the "Build" file. For LaSDI-NM you can then train an auto-encoder using the "Train" file. Finally, use the "LaSDI" files to generate the ROM. Note that for LaSDI-LS, only the training files are required, as the POD data-compression is done within the LaSDI-LS notebook.
 
-In the case of MFEM examples, it is necessary to transfer the simultion from finite element data to a uniform grid. This is completed by the interp_to_numpy.py file. The default grid is 64x64.
+### MFEM Examples
+
+Because the MFEM data comes from finite-element data, we first translate the FE degrees of freedom to a fixed 64x64 grid. This can be done using the "bash" file for both the Diffusion and Radial Advection examples. This is followed by the "Train" and "LaSDI" files as in the Burger's examples. Further details can be found in the problem folders.
 
 ## Notes on Training Autoencoders and Applying LaSDI
 
@@ -33,9 +35,10 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
            decoder: either neural network (with pytorch) or matrix (LS-ROM)
            NN: Boolean on whether a nerual network is used
            device: device NN is on. Default 'cpu', use 'cuda' if necessary
-           Local: Boolean. Determines Local or Global DI (still in progress)
+           Local: Boolean. Determines Local or Global DI
            Coef_interp: Boolean. Determines method of Local DI
            nearest_neigh: Number of nearest neigh in Local DI
+	   Coef_interp_method: Either Rbf or interp2d (method for coefficient interpolation)
            
        
 2. LaSDI.train_dynamics(
@@ -44,12 +47,13 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
            ls_trajs: latent-space trajectories in a list of arrays formatted as [time, space] *Currently working on implementation to generate ls_trajectories within the method*
            training_values: list/array of corresponding parameter values to above
            dt: time-step used in FOM
-           normal: normalization constant. Default as 1, set 'max' to normalize all values to between -1 and 1
-           LS_vis: Boolean to visulaize a trajectory and discovered dynamics in the latent-space. Default True
+           normal: normalization constant to scale the magnitude of the latent-space trajectories. Ideally, trajectory magnitude is between -1 and 1. Default as 1.
+           LS_vis: Boolean to visulaize a trajectory and discovered dynamics in the latent-space. Default True.
            
            PySINDy parameters:
               degree: degree of desired polynomial. Default 1
               include_interactions: Boolean include cross terms for degree >1. Default False
+	      threshold: Sparsity threshold for high-degree approximations to encourage numerical stability.
            
  
 3. LaSDI.generate_FOM(

@@ -7,17 +7,6 @@ import scipy.integrate as integrate
 from itertools import combinations_with_replacement
 import time
 
-# import matplotlib
-# matplotlib.rcParams['mathtext.fontset'] = 'stix'
-# matplotlib.rcParams['font.family'] = 'STIXGeneral'
-# matplotlib.pyplot.title(r'ABC123 vs $\mathrm{ABC123}^{123}$')
-# plt.rcParams['font.size'] = 56
-# plt.rcParams['figure.dpi'] = 150
-# plt.rcParams['axes.linewidth'] = 2
-# plt.rcParams['axes.spines.right'] = False
-# plt.rcParams['axes.spines.top'] = False
-
-
 class LaSDI:
     """
     LaSDI class for data-driven ROM. Functions: train_dynamics approximates dynamical systems of the latent-space. 
@@ -32,15 +21,20 @@ class LaSDI:
        Local: Boolean. Determines Local or Global DI (still in progress)
        Coef_interp: Boolean. Determines method of Local DI
        nearest_neigh: Number of nearest neigh in Local DI
+       Coef_interp_method: Either interp2d or Rbf method for coefficient interpolation.
     """
     
-    def __init__(self, encoder, decoder, NN = False, device = 'cpu', Local = False, Coef_interp = False, nearest_neigh = 4):
+    def __init__(self, encoder, decoder, NN = False, device = 'cpu', Local = False, Coef_interp = False, nearest_neigh = 4, Coef_interp_method = None):
         
         self.Local = Local
         self.Coef_interp = Coef_interp
         self.nearest_neigh = nearest_neigh
         self.NN = NN
         if Coef_interp == True:
+            if Coef_interp_method == None:
+                print('WARNING: Please specify an interpolation method either interp2d or Rbf')
+            else:
+                self.Coef_interp_method = Coef_interp_method
             if nearest_neigh <4:
                 print('WARNING: More minimum 4 nearest neighbors required for interpolation')
                 return
@@ -55,7 +49,7 @@ class LaSDI:
             
         return
     
-    def train_dynamics(self, ls_trajs, training_values, dt, normal = 1, degree = 1, include_interaction=False, LS_vis = True, threshold = 0 ):
+    def train_dynamics(self, ls_trajs, training_values, dt, normal = 1, degree = 1, include_interaction=False, LS_vis = True, threshold = 0):
         """
         Approximates the dynamical system for the latent-space. Local == True, use generate_FOM. 
         
@@ -63,17 +57,16 @@ class LaSDI:
            ls_trajs: latent-space trajectories in a list of arrays formatted as [time, space]
            training_values: list/array of corresponding parameter values to above
            dt: time-step used in FOM
-           normal: normalization constant. Default as 1, set 'max' to normalize all values to between -1 and 1
+           normal: normalization constant. Default as 1
            LS_vis: Boolean to visulaize a trajectory and discovered dynamics in the latent-space. Default True
            
            PySINDy parameters:
               degree: degree of desired polynomial. Default 1
               include_interactions: Boolean include cross terms for degree >1. Default False
+              threshold: Sparsity threshold. Used to enforce sparsity for numerical stability of high-degree systems if necessary.
         """
-        if normal == 'max':
-            self.normal = np.amax(np.abs(ls_trajs))
-        else:
-            self.normal = normal
+
+        self.normal = normal
         
         data_LS = []
         for traj in ls_trajs:
@@ -88,9 +81,10 @@ class LaSDI:
             if LS_vis == True:
                 if self.NN == True:
                     DcTech = 'LaSDI-NM Latent-Space Visualization'
-#                     DcTech = 'Training Latent-Space Trajectory'
+                    DcTech = 'Latent-Space Dynamics by Nonlinear Compression'
                 else:
                     DcTech = 'LaSDI-LS Latent-Space Visualization'
+                    DcTech = 'Latent-Space Dynamics by Linear Compression'
                 time = np.linspace(0, dt*len(data_LS[-1]), len(data_LS[-1]))
                 fig = plt.figure()
                 fig.set_size_inches(9,6)
@@ -105,12 +99,13 @@ class LaSDI:
                 for dim in range(data_LS[-1].shape[1]):
                     plt.plot(time, new[:,dim], '--', label = labels['new'])
                     labels['new'] = '_nolegend_'
-#                 ax.legend()
-#                 ax.set_ylim(-1.5,1.5)
+                ax.legend()
                 ax.set_xlabel('Time')
                 ax.set_ylabel('Magnitude')
             return model.print()  
         elif self.Coef_interp == True:
+            if Coef_interp_method == None:
+                print('WARNING: Please specify an interpolation method either interp2d or Rbf')
             self.model_list = []
             self.training_values = training_values
             self.dt = dt
@@ -132,21 +127,11 @@ class LaSDI:
             self.poly_library = poly_library
             self.optimizer = optimizer
             self.threshold = threshold
-#             print('Warning: This module is not completed yet. Continue to LaSDI.generate_FOM')
-            return
-        """
-        Work in Progress (Partitioning parameter space and training one model for each)
-
-            
-        if Local == True:
-            
-            if Coef_interp = False:
-                model_list = []
-        """        
+            return 
         
             
     
-    def generate_FOM(self,pred_IC,pred_value,t):
+    def generate_ROM(self,pred_IC,pred_value,t):
         """
         Takes initial condition in full-space and associated parameter values and generates forward in time using the trained dynamics from above.
         Inputs:
@@ -189,7 +174,7 @@ class LaSDI:
                 self.training_time = 0
                 for ls_dim in range(self.model_list[0].shape[0]):
                     for func_index in range(self.model_list[0].shape[1]):
-                        f = Rbf(self.training_values[dist_index,0], self.training_values[dist_index,1], np.array(self.model_list)[dist_index,ls_dim,func_index])
+                        f = self.Coef_interp_method(self.training_values[dist_index,0], self.training_values[dist_index,1], np.array(self.model_list)[dist_index,ls_dim,func_index])
                         self.coeff_interp_model[ls_dim, func_index] = f(pred_value[0], pred_value[1])
                 def ODE_resim(X,t, Xi):
                     Lib = []
