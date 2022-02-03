@@ -20,7 +20,7 @@ rm -rf ex16_sim
 mkdir ex16_sim
 make lasdi_ex16 -f makefile_ex16
 
-for i in $(seq 180 20 240)
+for i in $(seq 180 20 220)
 do
 	for j in $(seq 180 20 220)
 	do

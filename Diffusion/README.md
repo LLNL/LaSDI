@@ -1,7 +1,7 @@
 # LaSDI MFEM Examples
 Note: Files names will differ and will need to be adjusted
 
-## Instructions: Steps 1 and 2 can be performed by bash_ex9
+## Instructions: Steps 1 and 2 can be performed by bash_ex16
 
 1) Generate MFEM files using "visit" option in generation. 
 
