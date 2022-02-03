@@ -18,9 +18,9 @@ cd $MFEM_DIR
 rm ex16_interp_*.npz
 make lasdi_ex16 -f makefile_ex16
 
-for i in $(seq 180 20 181)
+for i in $(seq 180 20 1220)
 do
-	for j in $(seq 180 20 181)
+	for j in $(seq 180 20 220)
 	do
 		echo $i$j
 		./lasdi_ex16 -m ../data/inline-tri.mesh -vs 1 -r 3 -visit -freq $((i/100)).$((i%100)) -am $((j/100)).$((j%100)) -tf 1
