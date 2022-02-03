@@ -20,7 +20,7 @@ rm -rf ex9_sim
 mkdir ex9_sim
 make lasdi_ex9 -f makefile_ex9
 
-for i in $(seq 60 1 100)
+for i in $(seq 95 5 105)
 do
 	echo $i
         rm -rf ex9_sim/* 
