@@ -10,7 +10,8 @@ import numpy as np
 import mfem.ser as mfem
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
-import path, tqdm
+import path
+from tqdm import tqdm
 from mfem import path
 from os.path import expanduser, join, dirname, exists
 import sys

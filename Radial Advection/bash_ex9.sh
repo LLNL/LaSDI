@@ -11,16 +11,16 @@ source ../lasdi_venv/bin/activate
 MFEM_DIR="../dependencies/mfem/examples"
 
 cp lasdi_ex9.cpp $MFEM_DIR
-cp makefile_ex9 $MFEM_DIR
-cp interp_to_numpy_9.py $MFEM_DIR
+cp makefile_ex9 "$MFEM_DIR"
+cp interp_to_numpy_9.py "$MFEM_DIR"
 
-cd $MFEM_DIR
+cd "$MFEM_DIR"
 rm ex9_interp_*.npz
 rm -rf ex9_sim
 mkdir ex9_sim
 make lasdi_ex9 -f makefile_ex9
 
-for i in $(seq 95 5 105)
+for i in $(seq 60 2 61)
 do
 	echo $i
         rm -rf ex9_sim/* 
