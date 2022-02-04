@@ -5,16 +5,26 @@ There are four examples included. 1) 1D Burgers, 2) 2D Burgers (both as simulate
 Each of the folders includes instructions for building the data, training the neural networks or using a linear data-compression technique and applying LaSDI.
 They also include basic data files and trained networks for observing some of the results. 
 
-## Required Packages
+## Required Packages and Disclaimer
+
+Currently, MFEM examples only work within a Linux enviornment, due to the dependency on PyMFEM. Both 1D and 2D Burger's examples should work within any OS.
 
 MFEM
+
 PyMFEM
+
 PySINDy
+
 pytorch
+
 numpy
+
 scipy
+
 tqdm
+
 matplotlib
+
 
 ## Instructions
 
