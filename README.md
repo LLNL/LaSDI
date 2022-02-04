@@ -28,7 +28,7 @@ matplotlib
 
 ## Instructions
 
-To download dependencies, run ./setup.sh. This will install all above dependencies including MFEM and PyMFEM in serial. (We are currently debugging the parallel installation).
+To download dependencies, run "./setup.sh". This will install all above dependencies including MFEM and PyMFEM in serial. (We are currently debugging the parallel installation).
 
 ### 1D and 2D Burger's Problem
 
@@ -81,9 +81,9 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
 	   Printing of discovered dynamical system
 	   plot of final training latent-space trajectory and approximated dynamical system (if LS_vis == True)
            
+
  
 3. LaSDI.generate_ROM
-
 
         Inputs:
             pred_IC: Initial condition of the desired simulation
@@ -91,6 +91,8 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
             t: time stamps corresponding to training FOMs
 	Output:
 	    ROM: ndarray (size == FOM)
+
+
             
 
 #### Recommendations for setting DI parameters.
