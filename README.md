@@ -52,7 +52,7 @@ If the generated data already fits within this regime, then do not modify the sn
 The LaSDI class is documented with inputs, outputs and general instructions. Various *kwargs* can be passed through to adjust the learning process. In general:
 
 1. LaSDI
-
+```
         Inputs:
            encoder: either neural network (with pytorch) or matrix (LS-ROM)
            decoder: either neural network (with pytorch) or matrix (LS-ROM)
@@ -62,10 +62,10 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
            Coef_interp: Boolean. Determines method of Local DI
            nearest_neigh: Number of nearest neigh in Local DI
 	   Coef_interp_method: Either Rbf or interp2d (method for coefficient interpolation)
-           
+```           
        
 2. LaSDI.train_dynamics
-
+```
         Inputs:
            ls_trajs: latent-space trajectories in a list of arrays formatted as [time, space] *Currently working on implementation to generate ls_trajectories within the method*
            training_values: list/array of corresponding parameter values to above
@@ -80,18 +80,18 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
 	Outputs:
 	   Printing of discovered dynamical system
 	   plot of final training latent-space trajectory and approximated dynamical system (if LS_vis == True)
-           
+```           
 
  
 3. LaSDI.generate_ROM
-
+```
         Inputs:
             pred_IC: Initial condition of the desired simulation
             pred_value: Associated parameter values
             t: time stamps corresponding to training FOMs
 	Output:
 	    ROM: ndarray (size == FOM)
-
+```
 
             
 
