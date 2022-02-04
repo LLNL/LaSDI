@@ -28,6 +28,8 @@ matplotlib
 
 ## Instructions
 
+To download dependencies, run ./setup.sh. This will install all above dependencies including MFEM and PyMFEM in serial. (We are currently debugging the parallel installation).
+
 ### 1D and 2D Burger's Problem
 
 To generate results, first generate the training data using the "Build" file. For LaSDI-NM you can then train an auto-encoder using the "Train" file. Finally, use the "LaSDI" files to generate the ROM. Note that for LaSDI-LS, only the training files are required, as the POD data-compression is done within the LaSDI-LS notebook.
@@ -75,7 +77,6 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
               degree: degree of desired polynomial. Default 1
               include_interactions: Boolean include cross terms for degree >1. Default False
 	      threshold: Sparsity threshold for high-degree approximations to encourage numerical stability.
-
 	Outputs:
 	   Printing of discovered dynamical system
 	   plot of final training latent-space trajectory and approximated dynamical system (if LS_vis == True)
@@ -88,7 +89,6 @@ The LaSDI class is documented with inputs, outputs and general instructions. Var
             pred_IC: Initial condition of the desired simulation
             pred_value: Associated parameter values
             t: time stamps corresponding to training FOMs
-
 	Output:
 	    ROM: ndarray (size == FOM)
             
