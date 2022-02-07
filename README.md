@@ -1,7 +1,7 @@
 # LaSDI
 ## Orgainization
 
-There are four examples included. 1) 1D Burgers, 2) 2D Burgers (both as simulated in [https://arxiv.org/abs/2009.11990]), 3) a radial advection example as from MFEM (example 9, problem 3) and 4) a time-dependent diffusion example (MFEM example 16)
+There are four examples included. 1) 1D Burgers, 2) 2D Burgers (both as simulated in [Kim, et al., 2022](https://www.sciencedirect.com/science/article/pii/S0021999121007361)), 3) a radial advection example as from MFEM (example 9, problem 3) and 4) a time-dependent diffusion example (MFEM example 16)
 Each of the folders includes instructions for building the data, training the neural networks or using a linear data-compression technique and applying LaSDI.
 They also include basic data files and trained networks for observing some of the results. 
 
