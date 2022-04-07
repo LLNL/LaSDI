@@ -39,6 +39,7 @@ class Encoder(nn.Module):
   def __init__(self,m,M1,f,f_a):
     self.m = m
     self.f = f
+    self.M = M1
     super(Encoder,self).__init__()
     self.full = nn.Sequential(  nn.Linear(m,M1),
                                 f_a(),
@@ -55,6 +56,7 @@ class Decoder(nn.Module):
   def __init__(self,f,M2,m,f_a):
     self.m = m
     self.f = f
+    self.M = M2
     super(Decoder,self).__init__()
     self.full = nn.Sequential(  nn.Linear(f,M2,bias=False),
                                 f_a(),
@@ -67,19 +69,48 @@ class Decoder(nn.Module):
     
     return y
 
-def trainAutoEncoder( EncoderClass, 
-                      DecoderClass,
-                      f_activation,
-                      training_data,
-                      test_data,
-                      batch_size,
-                      m, f, b, db, 
-                      num_epochs,
-                      num_epochs_print,
-                      mask ):
+def getDevice():
+  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+  return device
 
-  M1 = 2*m
-  M2 = b + (m-1)*db
+def createAE(  EncoderClass,
+               DecoderClass,
+               f_activation,
+               mask,
+               m, f, M1, M2,
+               device ):
+  encoder = EncoderClass(m,M1,f,f_activation).to(device)
+  decoder = DecoderClass(f,M2,m,f_activation).to(device)
+  # Prune
+  prune.custom_from_mask(decoder.full[2], name='weight', mask=torch.tensor(mask).to(device))    
+  return encoder, decoder
+
+def readAEFromFile( EncoderClass,
+                    DecoderClass,
+                    f_activation,
+                    mask,
+                    m, f, M1, M2,
+                    device,
+                    fname ):
+  encoder, decoder = createAE(  EncoderClass,
+                                DecoderClass,
+                                f_activation,
+                                mask,
+                                m, f, M1, M2,
+                                device )
+  model = torch.load(fname, map_location=device)
+  encoder.load_state_dict(model['encoder_state_dict'])
+  decoder.load_state_dict(model['decoder_state_dict'])
+  return encoder, decoder
+
+def trainAE( encoder, 
+             decoder,
+             training_data,
+             test_data,
+             batch_size,
+             num_epochs,
+             num_epochs_print,
+             model_fname ):
 
   dataset = {'train':data_utils.TensorDataset(torch.tensor(training_data)),
              'test':data_utils.TensorDataset(torch.tensor(test_data))}
@@ -93,8 +124,7 @@ def trainAutoEncoder( EncoderClass,
   data_loaders = {'train':train_loader, 'test':test_loader}
   
   # set device
-  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  print("Using device:", device, '\n')
+  device = getDevice()
 
   # set checkpoint
   checkpoint_file = './checkpoint.tar'
@@ -102,12 +132,6 @@ def trainAutoEncoder( EncoderClass,
   # load model
   try:
       checkpoint = torch.load(checkpoint_file, map_location=device)
-      
-      encoder = EncoderClass(m,M1,f,f_activation).to(device)
-      decoder = DecoderClass(f,M2,m,f_activation).to(device)
-      
-      # Prune
-      prune.custom_from_mask(decoder.full[2], name='weight', mask=torch.tensor(mask).to(device))    
       
       optimizer = torch.optim.Adam(list(encoder.parameters()) + list(decoder.parameters()), lr=0.001)
       scheduler = lr_scheduler.ReduceLROnPlateau(optimizer,patience=10) 
@@ -133,15 +157,9 @@ def trainAutoEncoder( EncoderClass,
   
       # resume training
       print("")
-      print('Re-start {}th training... m={}, f={}, M1={}, M2={}, b={}, db={}'.format(
-          last_epoch+1, m, f, M1, M2, b, db))
+      print('Re-start {}th training... m={}, f={}, M1={}, M2={}'.format(
+            last_epoch+1, encoder.m, encoder.f, encoder.M, decoder.M))
   except:
-      encoder = EncoderClass(m,M1,f,f_activation).to(device)
-      decoder = DecoderClass(f,M2,m,f_activation).to(device)
-      
-      # Prune
-      prune.custom_from_mask(decoder.full[2], name='weight', mask=torch.tensor(mask).to(device))
-  
       optimizer = torch.optim.Adam(list(encoder.parameters()) + list(decoder.parameters()), lr=0.001)
       scheduler = lr_scheduler.ReduceLROnPlateau(optimizer,patience=10) 
       
@@ -162,8 +180,8 @@ def trainAutoEncoder( EncoderClass,
   
       # start training
       print("")
-      print('Start first training... m={}, f={}, M1={}, M2={}, b={}, db={}'.format(
-          m, f, M1, M2, b, db))
+      print('Start first training... m={}, f={}, M1={}, M2={}'.format(
+            encoder.m, encoder.f, encoder.M, decoder.M))
   pass
   
   
@@ -307,8 +325,9 @@ def trainAutoEncoder( EncoderClass,
   ###### save models ########
   print()
   print("Saving after {}th training to".format(epoch),
-        './AE_git.tar')
-  torch.save({'encoder_state_dict': encoder.state_dict(), 'decoder_state_dict': decoder.state_dict()}, './AE_git.tar')
+        model_fname)
+  torch.save( {'encoder_state_dict': encoder.state_dict(), 'decoder_state_dict': decoder.state_dict()}, 
+              model_fname )
   
   
   # plot train and test loss
@@ -328,7 +347,16 @@ def trainAutoEncoder( EncoderClass,
       
   torch.cuda.empty_cache()
 
+def encodedSnapshots( encoder,
+                      solution_snapshots,
+                      n_steps,
+                      device ):
+  ndata = solution_snapshots.shape[0]
+  nset = int(ndata/n_steps)
+  latent_space_SS = []
+  for i in range(nset):
+    input_SS = torch.tensor(solution_snapshots[i*n_steps:(i+1)*n_steps]).to(device)
+    latent_space = encoder(input_SS).cpu().detach().numpy()
+    latent_space_SS.append(latent_space)
 
-
-
-
+  return latent_space_SS
