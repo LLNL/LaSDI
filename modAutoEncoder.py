@@ -335,7 +335,8 @@ def trainAE( encoder,
   plt.semilogy(loss_hist['train'])
   plt.semilogy(loss_hist['test'])
   plt.legend(['train','test'])
-  plt.show()   
+  #plt.show()   
+  plt.savefig('training_loss.png')
   
   # delete checkpoint
   try:

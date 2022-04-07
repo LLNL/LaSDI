@@ -102,6 +102,7 @@ class LaSDI:
                 ax.legend()
                 ax.set_xlabel('Time')
                 ax.set_ylabel('Magnitude')
+                plt.savefig('latent_space_dynamics.png')
             return model.print()  
         elif self.Coef_interp == True:
             if Coef_interp_method == None:
