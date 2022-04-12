@@ -110,6 +110,7 @@ def trainAE( encoder,
              batch_size,
              num_epochs,
              num_epochs_print,
+             early_stop_patience,
              model_fname ):
 
   dataset = {'train':data_utils.TensorDataset(torch.tensor(training_data)),
@@ -145,6 +146,7 @@ def trainAE( encoder,
       last_epoch = checkpoint['epoch']
       loss_hist = checkpoint['loss_hist']
       best_loss = checkpoint['best_loss']
+      early_stop_counter = checkpoint['early_stop_counter']
       best_encoder_wts = checkpoint['best_encoder_wts']
       best_decoder_wts = checkpoint['best_decoder_wts']
       
@@ -168,6 +170,7 @@ def trainAE( encoder,
       last_epoch = 0
       loss_hist = {'train':[],'test':[]}
       best_loss = float("inf")
+      early_stop_counter = 1
       best_encoder_wts = copy.deepcopy(encoder.state_dict())
       best_decoder_wts = copy.deepcopy(decoder.state_dict())
       
@@ -274,8 +277,14 @@ def trainAE( encoder,
       # deep copy the model
       if loss_hist['test'][-1] < best_loss:
           best_loss = loss_hist['test'][-1]
+          early_stop_counter = 1
           best_encoder_wts = copy.deepcopy(encoder.state_dict())
           best_decoder_wts = copy.deepcopy(decoder.state_dict())
+      else:
+          early_stop_counter += 1
+          if early_stop_counter >= early_stop_patience:  
+              break
+
       
       # save checkpoint every num_epoch_print
       if epoch%num_epochs_print== 0:
@@ -286,6 +295,7 @@ def trainAE( encoder,
                       'optimizer_state_dict': optimizer.state_dict(),
                       'loss_hist': loss_hist,
                       'best_loss': best_loss,
+                      'early_stop_counter': early_stop_counter,
                       'best_encoder_wts': best_encoder_wts,
                       'best_decoder_wts': best_decoder_wts,
                       }, checkpoint_file)        
