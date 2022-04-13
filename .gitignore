@@ -4,3 +4,4 @@ __pycache__
 .ipynb_checkpoints
 *.png
 *.mp4
+checkpoint*.tar
