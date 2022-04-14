@@ -35,15 +35,15 @@ Re=10000
 if Re==10000:
     file_name="./data/snapshot_git.p"
     file_name_inter="./data/snapshot_inter.p"
-    nx=32
-    ny=32
-    nt=1000
+    nx=60
+    ny=60
+    nt=1500
 elif Re==100:
     file_name="./data/snapshot_full_low_Re.p"
     file_name_inter="./data/snapshot_full_inter_low_Re.p"
-    nx=32
-    ny=32
-    nt=1000
+    nx=60
+    ny=60
+    nt=1500
 else:
     raise NameError('{} is given for Re, but it must be either 100 or 10000'.format(Re))
 
