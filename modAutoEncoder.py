@@ -128,9 +128,6 @@ def trainAE( encoder,
   # set device
   device = getDevice()
 
-  # set checkpoint
-  chkpt_fname = './checkpoint.tar'
-
   # load model
   try:
       checkpoint = torch.load(chkpt_fname, map_location=device)
