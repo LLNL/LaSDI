@@ -31,10 +31,10 @@ device = autoencoder.getDevice()
 print("Using device:", device, '\n')
 
 # Given parameters
-nx = 32
-ny = 32
-m = (ny-2)*(nx-2) # 900
-nt = 1000
+nx = 60
+ny = 60
+m = (ny-2)*(nx-2) # 3364
+nt = 1500
 
 # Choose either Re=10000 or Re=100
 Re = 10000 
@@ -46,8 +46,8 @@ option = 2
 activation = 'sigmoid'
 
 # set batch_size, number of epochs, paitience for early stop
-batch_size = 100
-num_epochs = 5000
+batch_size = 1000
+num_epochs = 30000//5
 num_epochs_print = num_epochs//100
 early_stop_patience = num_epochs//50
 
