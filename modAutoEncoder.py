@@ -111,7 +111,8 @@ def trainAE( encoder,
              num_epochs,
              num_epochs_print,
              early_stop_patience,
-             model_fname ):
+             model_fname,
+             chkpt_fname ):
 
   dataset = {'train':data_utils.TensorDataset(torch.tensor(training_data)),
              'test':data_utils.TensorDataset(torch.tensor(test_data))}
@@ -128,11 +129,11 @@ def trainAE( encoder,
   device = getDevice()
 
   # set checkpoint
-  checkpoint_file = './checkpoint.tar'
+  chkpt_fname = './checkpoint.tar'
 
   # load model
   try:
-      checkpoint = torch.load(checkpoint_file, map_location=device)
+      checkpoint = torch.load(chkpt_fname, map_location=device)
       
       optimizer = torch.optim.Adam(list(encoder.parameters()) + list(decoder.parameters()), lr=0.001)
       scheduler = lr_scheduler.ReduceLROnPlateau(optimizer,patience=10) 
@@ -298,7 +299,7 @@ def trainAE( encoder,
                       'early_stop_counter': early_stop_counter,
                       'best_encoder_wts': best_encoder_wts,
                       'best_decoder_wts': best_decoder_wts,
-                      }, checkpoint_file)        
+                      }, chkpt_fname)        
   
   print()
   print('Epoch {}/{}, Learning rate {}'      .format(epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
@@ -350,7 +351,7 @@ def trainAE( encoder,
   
   # delete checkpoint
   try:
-      os.remove(checkpoint_file)
+      os.remove(chkpt_fname)
       print()
       print("checkpoint removed")
   except:

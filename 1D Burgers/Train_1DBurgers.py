@@ -112,6 +112,7 @@ early_stop_patience = num_epochs//10
 
 # autoencoder filename
 AE_fname = 'model/AE_git.tar'
+chkpt_fname = 'checkpoint.tar'
 
 encoder, decoder = autoencoder.createAE(encoder_class,
                                         decoder_class,
@@ -136,4 +137,5 @@ autoencoder.trainAE(encoder,
                     num_epochs,
                     num_epochs_print,
                     early_stop_patience,
-                    AE_fname )
+                    AE_fname,
+                    chkpt_fname )

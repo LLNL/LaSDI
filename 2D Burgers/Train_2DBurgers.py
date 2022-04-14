@@ -161,6 +161,8 @@ elif Re==100:
     file_name_AE_v="./model/AE_v_low_Re_v3_batch_240.pkl"
 else:
     raise NameError('{} is given for Re, but it must be either 100 or 10000'.format(Re))  
+file_name_chkpt_u = 'checkpoint_u.tar'
+file_name_chkpt_v = 'checkpoint_v.tar'
 
 # ## For u
 encoder_u, decoder_u = autoencoder.createAE(encoder_class,
@@ -178,7 +180,8 @@ autoencoder.trainAE(encoder_u,
                     num_epochs,
                     num_epochs_print,
                     early_stop_patience,
-                    file_name_AE_u )
+                    file_name_AE_u,
+                    file_name_chkpt_u )
 
 
 # ## For v
@@ -197,4 +200,5 @@ autoencoder.trainAE(encoder_v,
                     num_epochs,
                     num_epochs_print,
                     early_stop_patience,
-                    file_name_AE_v )
+                    file_name_AE_v,
+                    file_name_chkpt_v )
