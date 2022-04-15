@@ -141,7 +141,7 @@ M2 = b + (m-1)*db # decoder hidden layer
 f = LS_dim # latent dimension
 
 # sparsity and shape of mask
-mask_2d=utils.create_mask_2d(nx,ny,m,b,db)
+mask_2d=utils.create_mask_2d((nx-2),(ny-2),m,b,db)
 
 # number of parameters and memory
 en_para=m*M1+M1+M1*f
