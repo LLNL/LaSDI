@@ -112,7 +112,8 @@ def trainAE( encoder,
              num_epochs_print,
              early_stop_patience,
              model_fname,
-             chkpt_fname ):
+             chkpt_fname,
+             plt_fname = 'training_loss.png'):
 
   dataset = {'train':data_utils.TensorDataset(torch.tensor(training_data)),
              'test':data_utils.TensorDataset(torch.tensor(test_data))}
@@ -344,7 +345,7 @@ def trainAE( encoder,
   plt.semilogy(loss_hist['test'])
   plt.legend(['train','test'])
   #plt.show()   
-  plt.savefig('training_loss.png')
+  plt.savefig(plt_fname)
   
   # delete checkpoint
   try:
