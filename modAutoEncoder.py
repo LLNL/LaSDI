@@ -113,7 +113,8 @@ def trainAE( encoder,
              early_stop_patience,
              model_fname,
              chkpt_fname,
-             plt_fname = 'training_loss.png'):
+             plt_fname = 'training_loss.png',
+             num_epochs_save_model = 9999999 ):
 
   dataset = {'train':data_utils.TensorDataset(torch.tensor(training_data)),
              'test':data_utils.TensorDataset(torch.tensor(test_data))}
@@ -297,10 +298,17 @@ def trainAE( encoder,
                       'early_stop_counter': early_stop_counter,
                       'best_encoder_wts': best_encoder_wts,
                       'best_decoder_wts': best_decoder_wts,
-                      }, chkpt_fname)        
+                      }, chkpt_fname)
+  
+      if epoch%num_epochs_save_model==0:
+          print("Saving after {}th training to".format(epoch),
+                model_fname )
+          torch.save( { 'encoder_state_dict': encoder.state_dict(), 
+                        'decoder_state_dict': decoder.state_dict()}, 
+                      model_fname )
   
   print()
-  print('Epoch {}/{}, Learning rate {}'      .format(epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
+  print('Epoch {}/{}, Learning rate {}'.format(epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
   print('-' * 10)
   print('train MSELoss: {}'.format(loss_hist['train'][-1]))
   print('test MSELoss: {}'.format(loss_hist['test'][-1]))
