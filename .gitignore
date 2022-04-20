@@ -5,3 +5,4 @@ __pycache__
 *.png
 *.mp4
 checkpoint*.tar
+*.pyc
