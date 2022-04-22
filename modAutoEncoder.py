@@ -306,6 +306,13 @@ def trainAE( encoder,
           torch.save( { 'encoder_state_dict': encoder.state_dict(), 
                         'decoder_state_dict': decoder.state_dict()}, 
                       model_fname )
+          # plot train and test loss
+          plt.figure()
+          plt.semilogy(loss_hist['train'])
+          plt.semilogy(loss_hist['test'])
+          plt.legend(['train','test'])
+          plt.savefig(plt_fname)
+  
   
   print()
   print('Epoch {}/{}, Learning rate {}'.format(epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
@@ -332,9 +339,9 @@ def trainAE( encoder,
   # print out training time and best results
   print()
   if epoch < num_epochs:
-      print('Early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'          .format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
+      print('Early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'.format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
   else:
-      print('No early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'          .format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
+      print('No early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'.format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
   print('-' * 10)
   print('Best train MSELoss: {}'.format(train_loss))
   print('Best test MSELoss: {}'.format(best_loss))
