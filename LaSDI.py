@@ -24,12 +24,13 @@ class LaSDI:
        Coef_interp_method: Either interp2d or Rbf method for coefficient interpolation.
     """
     
-    def __init__(self, encoder, decoder, NN = False, device = 'cpu', Local = False, Coef_interp = False, nearest_neigh = 4, Coef_interp_method = None):
+    def __init__(self, encoder, decoder, NN = False, device = 'cpu', Local = False, Coef_interp = False, nearest_neigh = 4, Coef_interp_method = None, plot_fname = 'latent_space_dynamics.png'):
         
         self.Local = Local
         self.Coef_interp = Coef_interp
         self.nearest_neigh = nearest_neigh
         self.NN = NN
+        self.plot_fname = plot_fname
         if Coef_interp == True:
             if Coef_interp_method == None:
                 print('WARNING: Please specify an interpolation method either interp2d or Rbf')
@@ -102,7 +103,7 @@ class LaSDI:
                 ax.legend()
                 ax.set_xlabel('Time')
                 ax.set_ylabel('Magnitude')
-                plt.savefig('latent_space_dynamics.png')
+                plt.savefig(self.plot_fname)
             return model.print()  
         elif self.Coef_interp == True:
             if Coef_interp_method == None:

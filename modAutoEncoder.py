@@ -111,7 +111,10 @@ def trainAE( encoder,
              num_epochs,
              num_epochs_print,
              early_stop_patience,
-             model_fname ):
+             model_fname,
+             chkpt_fname,
+             plt_fname = 'training_loss.png',
+             num_epochs_save_model = 9999999 ):
 
   dataset = {'train':data_utils.TensorDataset(torch.tensor(training_data)),
              'test':data_utils.TensorDataset(torch.tensor(test_data))}
@@ -127,12 +130,9 @@ def trainAE( encoder,
   # set device
   device = getDevice()
 
-  # set checkpoint
-  checkpoint_file = './checkpoint.tar'
-
   # load model
   try:
-      checkpoint = torch.load(checkpoint_file, map_location=device)
+      checkpoint = torch.load(chkpt_fname, map_location=device)
       
       optimizer = torch.optim.Adam(list(encoder.parameters()) + list(decoder.parameters()), lr=0.001)
       scheduler = lr_scheduler.ReduceLROnPlateau(optimizer,patience=10) 
@@ -298,10 +298,24 @@ def trainAE( encoder,
                       'early_stop_counter': early_stop_counter,
                       'best_encoder_wts': best_encoder_wts,
                       'best_decoder_wts': best_decoder_wts,
-                      }, checkpoint_file)        
+                      }, chkpt_fname)
+  
+      if epoch%num_epochs_save_model==0:
+          print("Saving after {}th training to".format(epoch),
+                model_fname )
+          torch.save( { 'encoder_state_dict': encoder.state_dict(), 
+                        'decoder_state_dict': decoder.state_dict()}, 
+                      model_fname )
+          # plot train and test loss
+          plt.figure()
+          plt.semilogy(loss_hist['train'])
+          plt.semilogy(loss_hist['test'])
+          plt.legend(['train','test'])
+          plt.savefig(plt_fname)
+  
   
   print()
-  print('Epoch {}/{}, Learning rate {}'      .format(epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
+  print('Epoch {}/{}, Learning rate {}'.format(epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
   print('-' * 10)
   print('train MSELoss: {}'.format(loss_hist['train'][-1]))
   print('test MSELoss: {}'.format(loss_hist['test'][-1]))
@@ -325,9 +339,9 @@ def trainAE( encoder,
   # print out training time and best results
   print()
   if epoch < num_epochs:
-      print('Early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'          .format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
+      print('Early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'.format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
   else:
-      print('No early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'          .format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
+      print('No early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'.format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
   print('-' * 10)
   print('Best train MSELoss: {}'.format(train_loss))
   print('Best test MSELoss: {}'.format(best_loss))
@@ -346,11 +360,11 @@ def trainAE( encoder,
   plt.semilogy(loss_hist['test'])
   plt.legend(['train','test'])
   #plt.show()   
-  plt.savefig('training_loss.png')
+  plt.savefig(plt_fname)
   
   # delete checkpoint
   try:
-      os.remove(checkpoint_file)
+      os.remove(chkpt_fname)
       print()
       print("checkpoint removed")
   except:
