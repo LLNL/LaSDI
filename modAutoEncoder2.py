@@ -37,14 +37,16 @@ class SiLU(nn.Module):
     return silu(input)
     
 class Encoder(nn.Module):
-  def __init__(self,m,M1,f,f_a):
+  def __init__(self,m,M1,M2,f,f_a):
     self.m = m
     self.f = f
     self.M = M1
     super(Encoder,self).__init__()
     self.full = nn.Sequential(  nn.Linear(m,M1),
                                 f_a(),
-                                nn.Linear(M1,f,bias=False) )
+                                nn.Linear(M1,M2),
+                                f_a(),
+                                nn.Linear(M2,f,bias=False) )
               
   def forward(self, y):     
     y = y.view(-1,self.m)
@@ -54,14 +56,16 @@ class Encoder(nn.Module):
     return T
     
 class Decoder(nn.Module):
-  def __init__(self,f,M2,m,f_a):
+  def __init__(self,f,M2,M1,m,f_a):
     self.m = m
     self.f = f
     self.M = M2
     super(Decoder,self).__init__()
     self.full = nn.Sequential(  nn.Linear(f,M2,bias=False),
                                 f_a(),
-                                nn.Linear(M2,m,bias=False) )
+                                nn.Linear(M2,M1),
+                                f_a(),
+                                nn.Linear(M1,m,bias=False) )
            
   def forward(self,T):
     T = T.view(-1,self.f)
@@ -83,11 +87,10 @@ def getDevice():
 def createAE(  EncoderClass,
                DecoderClass,
                f_activation,
-               mask,
                m, f, M1, M2,
                device ):
-  encoder = EncoderClass(m,M1,f,f_activation).to(device)
-  decoder = DecoderClass(f,M2,m,f_activation).to(device)
+  encoder = EncoderClass(m,M1,M2,f,f_activation).to(device)
+  decoder = DecoderClass(f,M2,M1,m,f_activation).to(device)
   # Prune
   #prune.custom_from_mask(decoder.full[2], name='weight', mask=torch.tensor(mask).to(device))    
   return encoder, decoder
@@ -95,14 +98,12 @@ def createAE(  EncoderClass,
 def readAEFromFile( EncoderClass,
                     DecoderClass,
                     f_activation,
-                    mask,
                     m, f, M1, M2,
                     device,
                     fname ):
   encoder, decoder = createAE(  EncoderClass,
                                 DecoderClass,
                                 f_activation,
-                                mask,
                                 m, f, M1, M2,
                                 device )
   model = torch.load(fname, map_location=device)
@@ -179,11 +180,6 @@ def trainAE( encoder,
       
       print("\n--------checkpoint restored--------\n")
       
-      # compute sparsity in mask
-      mask = decoder.state_dict()['full.2.weight_mask']
-      print("Sparsity in {} by {} mask: {:.2f}%".format(
-          mask.shape[0], mask.shape[1], 100. * float(torch.sum(mask == 0))/ float(mask.nelement())))
-  
       # resume training
       print("")
       print('Re-start {}th training... m={}, f={}, M1={}, M2={}'.format(
@@ -203,11 +199,6 @@ def trainAE( encoder,
       
       print("\n--------checkpoint not restored--------\n")
       
-      # compute sparsity in mask
-      #mask = decoder.state_dict()['full.2.weight_mask']
-      #print("Sparsity in {} by {} mask: {:.2f}%".format(
-      #    mask.shape[0], mask.shape[1], 100. * float(torch.sum(mask == 0))/ float(mask.nelement())))
-  
       # start training
       print("")
       if is_main_process():
@@ -222,15 +213,16 @@ def trainAE( encoder,
   
   for epoch in range(last_epoch+1,num_epochs+1):   
   
-      if epoch%num_epochs_print == 0:
-          print()
-          if scheduler !=None:
-              print('Epoch {}/{}, Learning rate {}'.format(
-                  epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
-          else:
-              print('Epoch {}/{}'.format(
-                  epoch, num_epochs))
-          print('-' * 10)
+      if is_main_process():
+        if epoch%num_epochs_print == 0:
+            print()
+            if scheduler !=None:
+                print('Epoch {}/{}, Learning rate {}'.format(
+                    epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
+            else:
+                print('Epoch {}/{}'.format(
+                    epoch, num_epochs))
+            print('-' * 10)
   
       # Each epoch has a training and test phase
       for phase in ['train', 'test']:
@@ -299,9 +291,10 @@ def trainAE( encoder,
           if phase == 'train' and scheduler != None:
               scheduler.step(epoch_loss)
   
-          if epoch%num_epochs_print == 0:
-              print('{} MSELoss: {}'.format(
-                  phase, epoch_loss))
+          if is_main_process():
+            if epoch%num_epochs_print == 0:
+                print('{} MSELoss: {}'.format(
+                    phase, epoch_loss))
   
       # deep copy the model
       if loss_hist['test'][-1] < best_loss:
@@ -342,12 +335,12 @@ def trainAE( encoder,
           #plt.legend(['train','test'])
           #plt.savefig(plt_fname)
   
-  
-  print()
-  print('Epoch {}/{}, Learning rate {}'.format(epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
-  print('-' * 10)
-  print('train MSELoss: {}'.format(loss_hist['train'][-1]))
-  print('test MSELoss: {}'.format(loss_hist['test'][-1]))
+  if is_main_process():
+    print()
+    print('Epoch {}/{}, Learning rate {}'.format(epoch, num_epochs, optimizer.state_dict()['param_groups'][0]['lr']))
+    print('-' * 10)
+    print('train MSELoss: {}'.format(loss_hist['train'][-1]))
+    print('test MSELoss: {}'.format(loss_hist['test'][-1]))
   
   time_elapsed = time.time() - since
   
@@ -366,39 +359,38 @@ def trainAE( encoder,
       train_loss = loss_func(train_outputs,train_targets).item()
   
   # print out training time and best results
-  print()
-  if epoch < num_epochs:
-      print('Early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'.format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
-  else:
-      print('No early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'.format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
-  print('-' * 10)
-  print('Best train MSELoss: {}'.format(train_loss))
-  print('Best test MSELoss: {}'.format(best_loss))
-  
-  ###### save models ########
-  print()
-  print("Saving after {}th training to".format(epoch),
-        model_fname)
   if is_main_process():
+    if epoch < num_epochs:
+        print()
+        print('Early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'.format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
+    else:
+        print('No early stopping: {}th training complete in {:.0f}h {:.0f}m {:.0f}s'.format(epoch-last_epoch, time_elapsed // 3600, (time_elapsed % 3600) // 60, (time_elapsed % 3600) % 60))
+    print('-' * 10)
+    print('Best train MSELoss: {}'.format(train_loss))
+    print('Best test MSELoss: {}'.format(best_loss))
+    
+    ###### save models ########
+    print()
+    print("Saving after {}th training to".format(epoch),
+        model_fname)
     torch.save( {'encoder_state_dict': encoder.state_dict(), 'decoder_state_dict': decoder.state_dict()}, 
               model_fname )
-  
-  
-  # plot train and test loss
-  #plt.figure()
-  #plt.semilogy(loss_hist['train'])
-  #plt.semilogy(loss_hist['test'])
-  #plt.legend(['train','test'])
-  #plt.show()   
-  #plt.savefig(plt_fname)
-  
-  # delete checkpoint
-  try:
-      os.remove(chkpt_fname)
-      print()
-      print("checkpoint removed")
-  except:
-      print("no checkpoint exists")
+    
+    # plot train and test loss
+    #plt.figure()
+    #plt.semilogy(loss_hist['train'])
+    #plt.semilogy(loss_hist['test'])
+    #plt.legend(['train','test'])
+    #plt.show()   
+    #plt.savefig(plt_fname)
+    
+    # delete checkpoint
+    try:
+        os.remove(chkpt_fname)
+        print()
+        print("checkpoint removed")
+    except:
+        print("no checkpoint exists")
       
   torch.cuda.empty_cache()
 
