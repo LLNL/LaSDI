@@ -1,4 +1,5 @@
 # LaSDI
+
 ## Orgainization
 
 There are four examples included. 1) 1D Burgers, 2) 2D Burgers (both as simulated in [Kim, et al., 2022](https://www.sciencedirect.com/science/article/pii/S0021999121007361)), 3) a radial advection example as from MFEM (example 9, problem 3) and 4) a time-dependent diffusion example (MFEM example 16)
@@ -108,3 +109,18 @@ Fourth Pass: If the above does not work, then contact me for further and more co
 ### Questions/Comments
 Questions and comments should be directed to frieswd@math.arizona.edu
 
+## Citation
+
+If you find our work useful in your research, please cite:
+
+> Fries, William D., Xiaolong He, and Youngsoo Choi. <br> 
+> [Lasdi: Parametric latent space dynamics identification](https://doi.org/10.1016/j.cma.2022.115436) <br> 
+> *Computer Methods in Applied Mechanics and Engineering*, (399) 2022, pp. 115436.
+
+
+## License
+
+LaSDI is distributed under the terms of both the MIT license. All new contributions must be made under the MIT. See
+[LICENSE-MIT](https://github.com/LLNL/libROM/blob/master/LICENSE-MIT)
+
+LLNL Releease Nubmer: LLNL-CODE-843695
