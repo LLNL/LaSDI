@@ -120,7 +120,7 @@ If you find our work useful in your research, please cite:
 
 ## License
 
-LaSDI is distributed under the terms of both the MIT license. All new contributions must be made under the MIT. See
+LaSDI is distributed under the terms of the MIT license. All new contributions must be made under the MIT. See
 [LICENSE-MIT](https://github.com/LLNL/libROM/blob/master/LICENSE-MIT)
 
 LLNL Releease Nubmer: LLNL-CODE-843695
